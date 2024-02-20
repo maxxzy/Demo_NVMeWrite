@@ -5,6 +5,7 @@
 #include "send_worker.h"
 #include <vector>
 #include "write_worker.h"
+#include "global.h"
 
 QT_CHARTS_USE_NAMESPACE
 

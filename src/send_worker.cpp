@@ -6,6 +6,7 @@
 #include <cstring>
 #include <cstdio>
 #include <random>
+#include "global.h"
 
 void send_msg_worker(int index){
     struct msg_buf send_buf;

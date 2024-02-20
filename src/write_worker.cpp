@@ -9,6 +9,7 @@
 #include <vector>
 #include <thread>
 #include <fcntl.h>
+#include "global.h"
 
 void buffer_io(int index){
     std::string fname = "data" + std::to_string(index);
