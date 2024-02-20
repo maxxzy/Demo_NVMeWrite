@@ -2,6 +2,9 @@
 #include <QtCharts/QChartView>
 #include <QtCharts/QSplineSeries>
 #include <QDebug>
+#include "send_worker.h"
+#include <vector>
+#include "write_worker.h"
 
 QT_CHARTS_USE_NAMESPACE
 
@@ -55,14 +58,20 @@ demo_window::~demo_window()
     workerthread_1->requestInterruption();
     workerthread_1->quit();
 
+    for (int i=0;i<kConcurrency_generate;i++){
+        del_queue(i);
+    }
+    
+
     if (workerthread_1->wait(50)){
         qDebug()<<"workerthread has stopped"<<endl;
     }
+
     delete ui; 
 }
 
 void demo_window::Test_Begin(){
-    ui->Button_Begin->setText("stop");
+    ui->Button_Begin->setText("stop");    
     if (!workerthread_1->isRunning()){
         workerthread_1->start();
     } 
@@ -86,9 +95,19 @@ void demo_window::receiveData(const int &count){
     }
 }
 
-void workerthread::run() {
+void workerthread::run(){
     qDebug()<<"workerthread begins"<<endl;
     qsrand(time(NULL));
+    std::vector<std::thread> generate_threads;
+    std::vector<std::thread> write_threads;
+    for (int i=0;i<kConcurrency_generate;i++){
+        std::thread generator(send_msg_worker, i);
+        generate_threads.push_back(std::move(generator));
+    }
+    for (int i=0;i<kConcurrency;i++){
+        std::thread worker(direct_io, i);
+        write_threads.push_back(std::move(worker));
+    }
     while(!isInterruptionRequested()){
         emit sendData(4000+qrand()%500);
         sleep(1);
