@@ -12,7 +12,7 @@
 #include "global.h"
 
 void buffer_io(int index){
-    std::string fname = "data" + std::to_string(index);
+    std::string fname = "./datafile/data" + std::to_string(index);
     char data[WRITE_ONCE_BYTE_SIZE] __attribute__((aligned(WRITE_ONCE_BYTE_SIZE)));
 
     int fd = ::open(fname.c_str(), O_NOATIME | O_RDWR | O_CREAT, 0644);
@@ -27,7 +27,12 @@ void buffer_io(int index){
         get_data(index, data);
         int ret = ::write(fd, data, WRITE_ONCE_BYTE_SIZE);
         if (ret<0){
-            printf("direct_io write error\n");
+            printf("duffer_io write error\n");
+        }
+        else{
+            statMtx.lock();
+            WriteBytesStat += WRITE_ONCE_BYTE_SIZE;
+            statMtx.unlock();
         }
     }
 
@@ -35,8 +40,7 @@ void buffer_io(int index){
 }
 
 void direct_io(int index){
-    std::string fname = "data" + std::to_string(index);
-    printf("direct_io index:%d\n",index);
+    std::string fname = "./datafile/data" + std::to_string(index);
     char data[WRITE_ONCE_BYTE_SIZE] __attribute__((aligned(WRITE_ONCE_BYTE_SIZE)));
 
     int fd = ::open(fname.c_str(), O_DIRECT | O_NOATIME | O_RDWR | O_CREAT, 0644);
@@ -53,13 +57,18 @@ void direct_io(int index){
         if (ret<0){
             printf("direct_io write error\n");
         }
+        else{
+            statMtx.lock();
+            WriteBytesStat += WRITE_ONCE_BYTE_SIZE;
+            statMtx.unlock();
+        }
     }
 
     close(fd);
 }
 
 void mmap_io(int index){
-    std::string fname = "data" + std::to_string(index);
+    std::string fname = "./datafile/data" + std::to_string(index);
     std::string staging_fname = "staging" + std::to_string(index);
     char data[WRITE_ONCE_BYTE_SIZE] __attribute__((aligned(WRITE_ONCE_BYTE_SIZE)));
     char* base = nullptr;
@@ -96,6 +105,9 @@ void mmap_io(int index){
         }
         get_data(index, data);
         memcpy(cursor, data, 4096);
+        statMtx.lock();
+        WriteBytesStat += WRITE_ONCE_BYTE_SIZE;
+        statMtx.unlock();
         cursor += 4096;
         staging_offset += 4096;
     }

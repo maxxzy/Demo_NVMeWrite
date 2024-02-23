@@ -19,14 +19,14 @@ void send_msg_worker(int index){
     if(key<0){
         printf("creat key number failed\n");
     }
-    else printf("%x\n", key);
+    else printf("create key number: %x\n", key);
 
     int msgid = msgget(key, IPC_CREAT|0777);
 
     if (msgid==-1){
         printf("create queue error\n");
     }
-    else printf("%d\n",msgid);
+    else printf("create queue msgid: %d\n",msgid);
 
     msgctl(msgid, IPC_STAT, &q_info);
 
@@ -50,7 +50,7 @@ void send_msg_worker(int index){
                 send_buf.data[i]=tmp;
                 i++;
             }
-            printf("send_worker index: %d send\n", index);
+            //printf("send_worker index: %d send\n", index);
             msgsnd(msgid,&send_buf,strlen(send_buf.data),0);
             k++;
         }
@@ -69,7 +69,7 @@ void get_data(int index, char *str){
     mtx[index/4].lock();
     msgrcv(msgid,&rcv_buf,sizeof(rcv_buf.data),1,0);
     mtx[index/4].unlock();
-    printf("index %d  msgid %d rcv\n",index,msgid);
+    //printf("index %d  msgid %d rcv\n",index,msgid);
     strcpy(str, rcv_buf.data);
 }
 

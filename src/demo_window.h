@@ -21,7 +21,7 @@ public:
 
 public slots:
     void Test_Begin();
-    void receiveData(const int &count);
+    void receiveData(const uint64_t &count);
 
 private:
     workerthread *workerthread_1;
@@ -30,7 +30,7 @@ private:
     int maxSize;
     int maxX,maxY;
     QValueAxis *axisX, *axisY;
-    QList<int> data;
+    QList<uint64_t> data;
     QLineSeries *lineSeries;
     QChart *chart;
 };
@@ -52,5 +52,5 @@ public:
     void run() override; 
 
 signals:
-    void sendData(const int &count);
+    void sendData(const uint64_t &count);
 };
