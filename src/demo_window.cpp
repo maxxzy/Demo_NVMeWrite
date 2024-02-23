@@ -16,12 +16,13 @@ demo_window::demo_window(QWidget* parent)
     ui->setupUi(this);
 
     workerthread_1 = new workerthread(this);
+    qRegisterMetaType<uint64_t>("uint64_t");
 
     connect(ui->Button_Begin,SIGNAL(clicked(bool)),
             this,SLOT(Test_Begin()));
 
-    connect(workerthread_1, SIGNAL(sendData(int)),
-            this, SLOT(receiveData(int)));
+    connect(workerthread_1, SIGNAL(sendData(uint64_t)),
+            this, SLOT(receiveData(uint64_t)));
 
     ui->chartView->setRenderHint(QPainter::RenderHint::Antialiasing);
     chart = new QChart();
@@ -82,7 +83,7 @@ void demo_window::Test_Begin(){
     }
 }
 
-void demo_window::receiveData(const int &count){
+void demo_window::receiveData(const uint64_t &count){
     data.append(count);
     qDebug()<<"receive data "<<count<<endl;
 
@@ -105,12 +106,29 @@ void workerthread::run(){
         std::thread generator(send_msg_worker, i);
         generate_threads.push_back(std::move(generator));
     }
+    uint64_t  stat_start,stat_end,start_time,end_time;
+    stat_start = NowMicros();
+    start_time = NowMicros();
     for (int i=0;i<kConcurrency;i++){
         std::thread worker(direct_io, i);
         write_threads.push_back(std::move(worker));
     }
     while(!isInterruptionRequested()){
-        emit sendData(4000+qrand()%500);
+        statMtx.lock();
+        stat_end = NowMicros();
+        emit sendData(WriteBytesStat / (stat_end - stat_start));
+        WriteBytesStat = 0;
+        stat_start = NowMicros();
+        statMtx.unlock();
         sleep(1);
     }
-}
+    for (int i=0;i<kConcurrency_generate;i++){
+        generate_threads[i].join();
+    }
+    for (int i=0;i<kConcurrency;i++){
+        write_threads[i].join();
+    }
+    end_time = NowMicros();
+    printf("time elapsed microsecond(us) %lld, %lld MB/s\n", 
+            static_cast<long long>(end_time - start_time), static_cast<long long>(kTotalWriteBytes / (end_time - start_time)));
+} 
