@@ -6,6 +6,8 @@
 #include <vector>
 #include "write_worker.h"
 #include "global.h"
+#include "workerthread.h"
+#include <QGraphicsLayout>
 
 QT_CHARTS_USE_NAMESPACE
 
@@ -15,7 +17,7 @@ demo_window::demo_window(QWidget* parent)
 {
     ui->setupUi(this);
 
-    workerthread_1 = new workerthread(this);
+    workerthread_1 = new workerthread(this, this);
     qRegisterMetaType<uint64_t>("uint64_t");
 
     connect(ui->Button_Begin,SIGNAL(clicked(bool)),
@@ -25,8 +27,11 @@ demo_window::demo_window(QWidget* parent)
             this, SLOT(receiveData(uint64_t)));
 
     ui->chartView->setRenderHint(QPainter::RenderHint::Antialiasing);
+
     chart = new QChart();
     chart->legend()->hide();
+    chart->layout()->setContentsMargins(0, 0, 0, 0);
+    chart->setBackgroundRoundness(0); 
 
     maxSize = 120;
     maxX = 120;
@@ -58,12 +63,7 @@ demo_window::demo_window(QWidget* parent)
 demo_window::~demo_window()
 {
     workerthread_1->requestInterruption();
-    workerthread_1->quit();
-
-    for (int i=0;i<kConcurrency_generate;i++){
-        del_queue(i);
-    }
-    
+    workerthread_1->quit();    
 
     if (workerthread_1->wait(50)){
         qDebug()<<"workerthread has stopped"<<endl;
@@ -86,6 +86,7 @@ void demo_window::Test_Begin(){
 void demo_window::receiveData(const uint64_t &count){
     data.append(count);
     qDebug()<<"receive data "<<count<<endl;
+    ui->textEdit->insertPlainText(("speed:   " + std::to_string(count) + "MB/s\n").c_str());
 
     while(data.size()>maxSize){
         data.removeFirst();
@@ -97,38 +98,3 @@ void demo_window::receiveData(const uint64_t &count){
     }
 }
 
-void workerthread::run(){
-    qDebug()<<"workerthread begins"<<endl;
-    qsrand(time(NULL));
-    std::vector<std::thread> generate_threads;
-    std::vector<std::thread> write_threads;
-    for (int i=0;i<kConcurrency_generate;i++){
-        std::thread generator(send_msg_worker, i);
-        generate_threads.push_back(std::move(generator));
-    }
-    uint64_t  stat_start,stat_end,start_time,end_time;
-    stat_start = NowMicros();
-    start_time = NowMicros();
-    for (int i=0;i<kConcurrency;i++){
-        std::thread worker(direct_io, i);
-        write_threads.push_back(std::move(worker));
-    }
-    while(!isInterruptionRequested()){
-        statMtx.lock();
-        stat_end = NowMicros();
-        emit sendData(WriteBytesStat / (stat_end - stat_start));
-        WriteBytesStat = 0;
-        stat_start = NowMicros();
-        statMtx.unlock();
-        sleep(1);
-    }
-    for (int i=0;i<kConcurrency_generate;i++){
-        generate_threads[i].join();
-    }
-    for (int i=0;i<kConcurrency;i++){
-        write_threads[i].join();
-    }
-    end_time = NowMicros();
-    printf("time elapsed microsecond(us) %lld, %lld MB/s\n", 
-            static_cast<long long>(end_time - start_time), static_cast<long long>(kTotalWriteBytes / (end_time - start_time)));
-} 

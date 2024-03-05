@@ -11,8 +11,9 @@
 #include <fcntl.h>
 #include "global.h"
 
-void buffer_io(int index){
-    std::string fname = "./datafile/data" + std::to_string(index);
+void buffer_io(int index, int disk){
+    std::string fname = diskPath[disk] + std::to_string(index);
+    printf("buffer io %d\n", index);
     char data[WRITE_ONCE_BYTE_SIZE] __attribute__((aligned(WRITE_ONCE_BYTE_SIZE)));
 
     int fd = ::open(fname.c_str(), O_NOATIME | O_RDWR | O_CREAT, 0644);
@@ -39,8 +40,9 @@ void buffer_io(int index){
   close(fd);
 }
 
-void direct_io(int index){
-    std::string fname = "./datafile/data" + std::to_string(index);
+void direct_io(int index, int disk){
+    std::string fname = diskPath[disk] + std::to_string(index);
+    printf("direct io %d\n", index);
     char data[WRITE_ONCE_BYTE_SIZE] __attribute__((aligned(WRITE_ONCE_BYTE_SIZE)));
 
     int fd = ::open(fname.c_str(), O_DIRECT | O_NOATIME | O_RDWR | O_CREAT, 0644);
@@ -67,16 +69,17 @@ void direct_io(int index){
     close(fd);
 }
 
-void mmap_io(int index){
-    std::string fname = "./datafile/data" + std::to_string(index);
-    std::string staging_fname = "staging" + std::to_string(index);
+void mmap_io(int index, int disk){
+    std::string fname = diskPath[disk] + std::to_string(index);
+    std::string staging_fname = "./staging/staging" + std::to_string(index);
+    printf("mmap io %d\n", index);
     char data[WRITE_ONCE_BYTE_SIZE] __attribute__((aligned(WRITE_ONCE_BYTE_SIZE)));
     char* base = nullptr;
     char* cursor = nullptr;
     uint64_t staging_offset = 0, file_offset = 0;
 
     int staging_fd = ::open(staging_fname.c_str(), O_NOATIME | O_RDWR | O_CREAT, 0644);
-    int ret = posix_fallocate(staging_fd, 0, kStagingFileSize);
+    int ret = posix_fallocate(staging_fd, 0, kStagingFileSize);                                                                                                                                                                                                              
     if (ret != 0) { 
         printf("fallocate err %d\n", ret);
     }
