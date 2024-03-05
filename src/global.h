@@ -2,22 +2,31 @@
 #define GLOBAL_H
 #include <mutex>
 #include <QMutexLocker>
+#include <iostream>
 
 #define likely(x)      __builtin_expect(!!(x), 1)
 #define unlikely(x)    __builtin_expect(!!(x), 0)
 #define WRITE_ONCE_BYTE_SIZE 4096
 
-static char test_data[WRITE_ONCE_BYTE_SIZE] __attribute__((aligned(WRITE_ONCE_BYTE_SIZE))) = {'a'};
+static std::string diskPath[4] = {
+    "./datafile/data",
+    "./datafile/data",
+    "./datafile/data",
+    "./datafile/data"
+};
 
 static std::mutex mtx[64];
 static std::mutex statMtx;
 extern uint64_t WriteBytesStat;
-static const uint64_t kConcurrency_generate = 16;
-static const uint64_t kConcurrency = kConcurrency_generate * 4;
-static const uint64_t kWriteCountPerThread = 200 * 200;//1000 * 1000;
-static const uint64_t kWriteBytesPerThread  = WRITE_ONCE_BYTE_SIZE * kWriteCountPerThread;
-static const uint64_t kTotalWriteBytes = kWriteBytesPerThread * kConcurrency;
-static const uint64_t kStagingFileSize = WRITE_ONCE_BYTE_SIZE * 4;
+extern uint64_t kConcurrency_generate;
+extern uint64_t kConcurrency;
+extern uint64_t kWriteCountPerThread;
+extern uint64_t kWriteBytesPerThread;
+extern uint64_t kTotalWriteBytes;
+extern uint64_t kStagingFileSize;
+extern int IOMethod;
+extern int NVMeNumber;
+extern void (*writeFunc[3])(int, int);
 
 uint64_t NowMicros();
 
