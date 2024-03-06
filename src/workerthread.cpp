@@ -16,6 +16,10 @@ void workerthread::getPara(){
     else 
         kConcurrency_generate = kConcurrency / 4 + 1;
     kTotalWriteBytes = kWriteBytesPerThread * kConcurrency;
+    window->ui->textEdit->insertPlainText("----the test begins----");
+    window->ui->textEdit->insertPlainText(("NVMeNumber: " + std::to_string(NVMeNumber) + "\n").c_str());
+    window->ui->textEdit->insertPlainText(("ConcurrencyPerNVMe: " + std::to_string(kConcurrency) + "\n").c_str());
+    window->ui->textEdit->insertPlainText((window->ui->IOMethod->currentText() + "\n"));
 }
 
 void workerthread::run(){

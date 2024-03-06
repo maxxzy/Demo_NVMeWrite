@@ -107,12 +107,12 @@ void mmap_io(int index, int disk){
             staging_offset = 0;
         }
         get_data(index, data);
-        memcpy(cursor, data, 4096);
+        memcpy(cursor, data, WRITE_ONCE_BYTE_SIZE);
         statMtx.lock();
         WriteBytesStat += WRITE_ONCE_BYTE_SIZE;
         statMtx.unlock();
-        cursor += 4096;
-        staging_offset += 4096;
+        cursor += WRITE_ONCE_BYTE_SIZE;
+        staging_offset += WRITE_ONCE_BYTE_SIZE;
     }
 
     close(staging_fd);

@@ -35,7 +35,7 @@ void send_msg_worker(int index){
     std::random_device rd;
     std::default_random_engine random(rd());
     while (k<kWriteCountPerThread*4){
-        if (q_info.msg_qnum<=32){
+        if (q_info.msg_qnum<=8){
             int i=0;
             char tmp;
             while (i<WRITE_ONCE_BYTE_SIZE){
