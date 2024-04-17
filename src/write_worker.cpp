@@ -31,9 +31,12 @@ void buffer_io(int index, int disk){
             printf("duffer_io write error\n");
         }
         else{
+            written_count.fetch_add(1);
+            /*
             statMtx.lock();
             WriteBytesStat += WRITE_ONCE_BYTE_SIZE;
             statMtx.unlock();
+            */
         }
     }
 
@@ -60,9 +63,12 @@ void direct_io(int index, int disk){
             printf("direct_io write error\n");
         }
         else{
+            written_count.fetch_add(1);
+            /*
             statMtx.lock();
             WriteBytesStat += WRITE_ONCE_BYTE_SIZE;
             statMtx.unlock();
+            */
         }
     }
 
@@ -108,9 +114,12 @@ void mmap_io(int index, int disk){
         }
         get_data(index, data);
         memcpy(cursor, data, WRITE_ONCE_BYTE_SIZE);
+        written_count.fetch_add(1);
+        /*
         statMtx.lock();
         WriteBytesStat += WRITE_ONCE_BYTE_SIZE;
         statMtx.unlock();
+        */
         cursor += WRITE_ONCE_BYTE_SIZE;
         staging_offset += WRITE_ONCE_BYTE_SIZE;
     }

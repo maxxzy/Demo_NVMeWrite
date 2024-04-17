@@ -1,11 +1,14 @@
 #include "global.h"
 #include <sys/time.h>
 #include "write_worker.h"
+#include <atomic>
+
+std::atomic<uint64_t> written_count(0);
 
 uint64_t WriteBytesStat = 0;
 uint64_t kConcurrency_generate = 16;
 uint64_t kConcurrency = kConcurrency_generate * 4;
-uint64_t kWriteCountPerThread = 300 * 300;
+uint64_t kWriteCountPerThread = 200 * 200;
 uint64_t kWriteBytesPerThread = WRITE_ONCE_BYTE_SIZE * kWriteCountPerThread;
 uint64_t kTotalWriteBytes = kWriteBytesPerThread * kConcurrency;
 uint64_t kStagingFileSize = WRITE_ONCE_BYTE_SIZE * 4;
