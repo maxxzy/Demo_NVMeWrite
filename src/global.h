@@ -3,6 +3,7 @@
 #include <mutex>
 #include <QMutexLocker>
 #include <iostream>
+#include <atomic>
 
 #define likely(x)      __builtin_expect(!!(x), 1)
 #define unlikely(x)    __builtin_expect(!!(x), 0)
@@ -17,6 +18,8 @@ static std::string diskPath[4] = {
 
 static std::mutex mtx[64];
 static std::mutex statMtx;
+
+extern std::atomic<uint64_t> written_count;
 extern uint64_t WriteBytesStat;
 extern uint64_t kConcurrency_generate;
 extern uint64_t kConcurrency;

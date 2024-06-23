@@ -33,9 +33,9 @@ demo_window::demo_window(QWidget* parent)
     chart->layout()->setContentsMargins(0, 0, 0, 0);
     chart->setBackgroundRoundness(0); 
 
-    maxSize = 120;
-    maxX = 120;
-    maxY = 10240;
+    maxSize = 40;
+    maxX = 40;
+    maxY = 2048;
 
     lineSeries = new QLineSeries();
     chart->addSeries(lineSeries);

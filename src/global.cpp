@@ -1,6 +1,9 @@
 #include "global.h"
 #include <sys/time.h>
 #include "write_worker.h"
+#include <atomic>
+
+std::atomic<uint64_t> written_count(0);
 
 uint64_t WriteBytesStat = 0;
 uint64_t kConcurrency_generate = 16;
