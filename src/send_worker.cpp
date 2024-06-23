@@ -82,3 +82,4 @@ void del_queue(int index){
     msgctl(msgid,IPC_RMID,NULL);
     printf("msgid: %d del\n",msgid);
 }
+//测试git
